@@ -3,6 +3,17 @@ file_path="$1"
 search_string="$2"
 replace_string="$3"
 
+if [ ! -f "$1" ]; then
+  echo "Файл не найден: $1"
+  exit 1
+fi
+
+if [ -z "$2" ] || [ -z "$3" ]; then
+  echo "Переменная пустая!"
+  exit 1
+fi
+
+
 output=`sed "s/$2/$3/g" "$1"`
 echo "$output" > $1
 
