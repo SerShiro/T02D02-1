@@ -12,21 +12,42 @@ if [ ! -f "$log_file_path" ]; then
   exit 1
 fi
 
-# Инициализируем счетчики
 total_entries=0
 unique_files=0
 changed_files=0
 
-
-# Читаем каждую строку из файла лога
+array_filename=()
+count=0
+hash_old=0
+hash_new=0
 while IFS= read -r line; do
-  # Разбиваем строку на поля, разделенные тире
-  IFS="-" read -r file_path file_size datetime hash algorithm <<< "$line"
+  IFS=" " read -r file_path t1 file_size t2 datetime1 datetime2 t3 hash t4 algorithm <<< "$line" 
+   if [ $total_entries -eq 0 ]; then
+    hash_old=$hash
+    hash_new=$hash
+  else
+    hash_old=$hash_new
+    hash_new=$hash
+     if [[ hash_new != hash_old ]]; then
+     ((changed_files++))
+     fi
+  fi
   ((total_entries++))
+  filename=$(basename $file_path)
+  array_filename+=($filename)
 done < "$log_file_path"
 
-# Выводим результаты
+unique_array=()
+
+# Проходим по исходному массиву
+for element in "${array_filename[@]}"; do
+    if [[ ! " ${unique_array[@]} " =~ " $element " ]]; then
+        unique_array+=("$element")
+    fi
+done
+
+
 echo "Общее количество записей: $total_entries"
-echo "Количество уникальных файлов: $unique_files"
+echo "Количество уникальных файлов: ${#unique_array[@]}"
 echo "Количество изменений хэш-суммы: $changed_files"
 
